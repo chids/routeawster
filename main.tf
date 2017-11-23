@@ -7,11 +7,39 @@ provider "aws" {
   version = "~> 1.2.0"
 }
 
-module "api" {
-  source    = "./module"
-  topic     = "sample"
+variable "service" {
+  default = "routeawster"
+}
+
+module "articles" {
+  topic     = "articles"
+  api       = "${aws_api_gateway_rest_api.api.id}"
+  api_root  = "${aws_api_gateway_resource.root.id}"
+  source    = "./topic"
+  service   = "${var.service}"
   role_arn  = "${aws_iam_role.role.arn}"
   role_name = "${aws_iam_role.role.name}"
+}
+
+module "tags" {
+  topic     = "tags"
+  api       = "${aws_api_gateway_rest_api.api.id}"
+  api_root  = "${aws_api_gateway_resource.root.id}"
+  source    = "./topic"
+  service   = "${var.service}"
+  role_arn  = "${aws_iam_role.role.arn}"
+  role_name = "${aws_iam_role.role.name}"
+}
+
+
+resource "aws_api_gateway_rest_api" "api" {
+  name = "${var.service}"
+}
+
+resource "aws_api_gateway_resource" "root" {
+  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
+  parent_id = "${aws_api_gateway_rest_api.api.root_resource_id}"
+  path_part = "publish"
 }
 
 resource "aws_iam_role" "role" {

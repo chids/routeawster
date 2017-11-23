@@ -1,10 +1,9 @@
+variable "api" {}
+variable "api_root" {}
 variable "topic" {}
+variable "service" {}
 variable "role_arn" {}
 variable "role_name" {}
-
-variable "service" {
-  default = "routeawster"
-}
 
 resource "aws_sns_topic" "topic" {
   name = "${var.service}-${var.topic}"
@@ -28,24 +27,14 @@ resource "aws_iam_role_policy_attachment" "attach-topic-policy" {
     policy_arn = "${aws_iam_policy.topic-policy.arn}"
 }
 
-resource "aws_api_gateway_rest_api" "api" {
-  name = "${var.service}"
-}
-
-resource "aws_api_gateway_resource" "root" {
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  parent_id = "${aws_api_gateway_rest_api.api.root_resource_id}"
-  path_part = "publish"
-}
-
 resource "aws_api_gateway_resource" "publish" {
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
-  parent_id = "${aws_api_gateway_resource.root.id}"
+  rest_api_id = "${var.api}"
+  parent_id = "${var.api_root}"
   path_part = "${var.topic}"
 }
 
 resource "aws_api_gateway_method" "endpoint" {
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
+  rest_api_id = "${var.api}"
   resource_id = "${aws_api_gateway_resource.publish.id}"
   http_method = "POST"
   authorization = "NONE"
@@ -57,7 +46,7 @@ resource "aws_api_gateway_method" "endpoint" {
 }
 
 resource "aws_api_gateway_integration" "integration" {
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
+  rest_api_id = "${var.api}"
   resource_id = "${aws_api_gateway_resource.publish.id}"
   http_method = "${aws_api_gateway_method.endpoint.http_method}"
   type        = "AWS"
@@ -77,14 +66,14 @@ resource "aws_api_gateway_integration" "integration" {
 }
 
 resource "aws_api_gateway_method_response" "200" {
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
+  rest_api_id = "${var.api}"
   resource_id = "${aws_api_gateway_resource.publish.id}"
   http_method = "${aws_api_gateway_method.endpoint.http_method}"
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "MyDemoIntegrationResponse" {
-  rest_api_id = "${aws_api_gateway_rest_api.api.id}"
+resource "aws_api_gateway_integration_response" "response" {
+  rest_api_id = "${var.api}"
   resource_id = "${aws_api_gateway_resource.publish.id}"
   http_method = "${aws_api_gateway_method.endpoint.http_method}"
   status_code = "${aws_api_gateway_method_response.200.status_code}"
