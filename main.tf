@@ -35,3 +35,16 @@ module "tags" {
   role_arn  = "${module.api.role_arn}"
   role_name = "${module.api.role_name}"
 }
+
+module "some-subscriber" {
+  source    = "./subscribe-sqs"
+  consumer  = "some-service"
+  topic_arn = "${module.tags.topic_arn}"
+  service   = "${var.service}"
+}
+
+module "another-subscriber" {
+  source    = "./subscribe-https"
+  endpoint  = "https://some-url-that-MUST-auto-acknolwedges-sns-subscriptions"
+  topic_arn = "${module.tags.topic_arn}"
+}

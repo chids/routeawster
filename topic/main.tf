@@ -5,6 +5,10 @@ variable "service" {}
 variable "role_arn" {}
 variable "role_name" {}
 
+output "topic_arn" {
+  value = "${aws_sns_topic.topic.arn}"
+}
+
 resource "aws_sns_topic" "topic" {
   name = "${var.service}-${var.topic}"
 }
