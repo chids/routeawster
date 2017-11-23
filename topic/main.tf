@@ -1,4 +1,4 @@
-variable "api" {}
+variable "api_id" {}
 variable "api_root" {}
 variable "topic" {}
 variable "service" {}
@@ -28,13 +28,13 @@ resource "aws_iam_role_policy_attachment" "attach-topic-policy" {
 }
 
 resource "aws_api_gateway_resource" "publish" {
-  rest_api_id = "${var.api}"
+  rest_api_id = "${var.api_id}"
   parent_id = "${var.api_root}"
   path_part = "${var.topic}"
 }
 
 resource "aws_api_gateway_method" "endpoint" {
-  rest_api_id = "${var.api}"
+  rest_api_id = "${var.api_id}"
   resource_id = "${aws_api_gateway_resource.publish.id}"
   http_method = "POST"
   authorization = "NONE"
@@ -46,7 +46,7 @@ resource "aws_api_gateway_method" "endpoint" {
 }
 
 resource "aws_api_gateway_integration" "integration" {
-  rest_api_id = "${var.api}"
+  rest_api_id = "${var.api_id}"
   resource_id = "${aws_api_gateway_resource.publish.id}"
   http_method = "${aws_api_gateway_method.endpoint.http_method}"
   type        = "AWS"
@@ -66,14 +66,14 @@ resource "aws_api_gateway_integration" "integration" {
 }
 
 resource "aws_api_gateway_method_response" "200" {
-  rest_api_id = "${var.api}"
+  rest_api_id = "${var.api_id}"
   resource_id = "${aws_api_gateway_resource.publish.id}"
   http_method = "${aws_api_gateway_method.endpoint.http_method}"
   status_code = "200"
 }
 
 resource "aws_api_gateway_integration_response" "response" {
-  rest_api_id = "${var.api}"
+  rest_api_id = "${var.api_id}"
   resource_id = "${aws_api_gateway_resource.publish.id}"
   http_method = "${aws_api_gateway_method.endpoint.http_method}"
   status_code = "${aws_api_gateway_method_response.200.status_code}"
