@@ -45,6 +45,6 @@ module "some-subscriber" {
 
 module "another-subscriber" {
   source    = "./subscribe-https"
-  endpoint  = "https://some-url-that-MUST-auto-acknolwedges-sns-subscriptions"
+  endpoint  = "https://routeawster-http-subscriber.herokuapp.com/"
   topic_arn = "${module.tags.topic_arn}"
 }
