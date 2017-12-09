@@ -1,10 +1,18 @@
 terraform {
-  required_version = ">= 0.10.8"
+  required_version = ">= 0.11.1"
 }
 
 provider "aws" {
   region  = "eu-central-1"
-  version = "~> 1.2.0"
+  version = "~> 1.5.0"
+}
+
+provider "null" {
+  version = "~> 1.0.0"
+}
+
+provider "template" {
+  version = "~> 1.0.0"
 }
 
 variable "service" {
@@ -14,37 +22,31 @@ variable "service" {
 module "api" {
   source    = "./api"
   service   = "${var.service}"
+  entities  = ["tags", "articles"]
 }
 
-module "articles" {
-  source    = "./topic"
-  topic     = "articles"
+module "sqs" {
+  /**
+   * Only here to make this demo complete
+   * 
+   * Should really be provisioned by the subscribing party and not by routeawster
+   */
+  source  = "./sqs"
+  service = "${var.service}"
+}
+
+module "subscriber-one" {
+  source    = "./subscribe"
+  protocol  = "sqs"
   service   = "${var.service}"
-  api_id    = "${module.api.id}"
-  api_root  = "${module.api.root}"
-  role_arn  = "${module.api.role_arn}"
-  role_name = "${module.api.role_name}"
+  endpoint  = "${module.sqs.queue}"
+  entities  = ["articles", "tags"]
 }
 
-module "tags" {
-  source    = "./topic"
-  topic     = "tags"
+module "subscriber-two" {
+  source    = "./subscribe"
+  protocol  = "https"
   service   = "${var.service}"
-  api_id    = "${module.api.id}"
-  api_root  = "${module.api.root}"
-  role_arn  = "${module.api.role_arn}"
-  role_name = "${module.api.role_name}"
-}
-
-module "some-subscriber" {
-  source    = "./subscribe-sqs"
-  consumer  = "some-service"
-  topic_arn = "${module.tags.topic_arn}"
-  service   = "${var.service}"
-}
-
-module "another-subscriber" {
-  source    = "./subscribe-https"
   endpoint  = "https://routeawster-http-subscriber.herokuapp.com/"
-  topic_arn = "${module.tags.topic_arn}"
+  entities  = ["tags"]
 }

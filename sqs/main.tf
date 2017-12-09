@@ -1,23 +1,24 @@
-variable "service" {}
-variable "consumer" {}
-variable "topic_arn" {}
+variable "service" {
+  type = "string"
+}
 
-resource "aws_sns_topic_subscription" "subscription" {
-  protocol             = "sqs"
-  raw_message_delivery = true
-  topic_arn            = "${var.topic_arn}"
-  endpoint             = "${aws_sqs_queue.queue.arn}"
+output "queue" {
+  value = "${aws_sqs_queue.queue.arn}"
+}
+
+data "aws_sns_topic" "topic" {
+  name = "${var.service}"
 }
 
 resource "aws_sqs_queue" "dlq" {
-  name                      = "${var.service}-${var.consumer}-dlq"
+  name                      = "${var.service}-dummy-dlq"
   max_message_size          = 2048
   message_retention_seconds = 1209600
   receive_wait_time_seconds = 10
 }
 
 resource "aws_sqs_queue" "queue" {
-  name                      = "${var.service}-${var.consumer}"
+  name                      = "${var.service}-dummy"
   max_message_size          = 2048
   message_retention_seconds = 1209600
   receive_wait_time_seconds = 10
@@ -40,7 +41,7 @@ data "aws_iam_policy_document" "sns-publish-to-sqs" {
     condition {
         test     = "ArnEquals"
         variable = "aws:SourceArn"
-        values   = ["${var.topic_arn}"]
+        values   = ["${data.aws_sns_topic.topic.arn}"]
     }
   }
 }
