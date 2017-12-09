@@ -6,6 +6,9 @@ variable "entities" {
   type = "list"
 }
 
+output "topic" {
+  value = "${aws_sns_topic.topic.arn}"
+}
 /*
  * Base API setup
  */

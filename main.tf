@@ -25,28 +25,23 @@ module "api" {
   entities  = ["tags", "articles"]
 }
 
+# Only here to make this demo complete
+# Should really be provisioned by the subscribing party and not by routeawster
 module "sqs" {
-  /**
-   * Only here to make this demo complete
-   * 
-   * Should really be provisioned by the subscribing party and not by routeawster
-   */
   source  = "./sqs"
-  service = "${var.service}"
+  topic   = "${module.api.topic}"
 }
 
 module "subscriber-one" {
-  source    = "./subscribe"
-  protocol  = "sqs"
-  service   = "${var.service}"
-  endpoint  = "${module.sqs.queue}"
-  entities  = ["articles", "tags"]
+  source   = "./subscribe"
+  topic    = "${module.api.topic}"
+  endpoint = "${module.sqs.queue}"
+  entities = ["articles", "tags"]
 }
 
 module "subscriber-two" {
-  source    = "./subscribe"
-  protocol  = "https"
-  service   = "${var.service}"
-  endpoint  = "https://routeawster-http-subscriber.herokuapp.com/"
-  entities  = ["tags"]
+  source   = "./subscribe"
+  topic    = "${module.api.topic}"
+  endpoint = "https://routeawster-http-subscriber.herokuapp.com/"
+  entities = ["tags"]
 }

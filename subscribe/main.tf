@@ -1,8 +1,4 @@
-variable "protocol" {
-  type = "string"
-}
-
-variable "service" {
+variable "topic" {
   type = "string"
 }
 
@@ -14,22 +10,24 @@ variable "entities" {
   type = "list"
 }
 
-data "aws_sns_topic" "topic" {
-  name = "${var.service}"
+data "null_data_source" "protocol" {
+  inputs = {
+    type = "${element(split(":", var.endpoint), 0)}"
+  }
 }
 
 module "sqs-subscribe" {
   source  = "./sqs"
   queue   = "${var.endpoint}"
-  topic   = "${data.aws_sns_topic.topic.arn}"
-  enabled = "${var.protocol == "sqs" ? 1 : 0}"
+  topic   = "${var.topic}"
+  enabled = "${data.null_data_source.protocol.outputs["type"] == "arn" ? 1 : 0}"
 }
 
 module "https-subscribe" {
   source  = "./https"
   url     = "${var.endpoint}"
-  topic   = "${data.aws_sns_topic.topic.arn}"
-  enabled = "${var.protocol == "https" ? 1 : 0}"
+  topic   = "${var.topic}"
+  enabled = "${data.null_data_source.protocol.outputs["type"] == "https" ? 1 : 0}"
 }
 
 /**
