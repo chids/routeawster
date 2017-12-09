@@ -9,6 +9,11 @@ variable "entities" {
 output "topic" {
   value = "${aws_sns_topic.topic.arn}"
 }
+
+data "aws_region" "current" {
+  current = true
+}
+
 /*
  * Base API setup
  */
@@ -91,7 +96,7 @@ resource "aws_api_gateway_integration" "integration" {
   resource_id = "${element(aws_api_gateway_resource.publish.*.id, count.index)}"
   http_method = "POST"
   type        = "AWS"
-  uri         = "arn:aws:apigateway:eu-central-1:sns:action/Publish"
+  uri         = "arn:aws:apigateway:${data.aws_region.current.name}:sns:action/Publish"
   credentials = "${aws_iam_role.role.arn}"
   integration_http_method = "POST"
   request_parameters = {
