@@ -2,6 +2,10 @@ variable "topic" {
   type = "string"
 }
 
+variable "protocol" {
+  type = "string"
+}
+
 variable "endpoint" {
   type = "string"
 }
@@ -10,24 +14,18 @@ variable "entities" {
   type = "list"
 }
 
-data "null_data_source" "protocol" {
-  inputs = {
-    type = "${element(split(":", var.endpoint), 0)}"
-  }
-}
-
 module "sqs-subscribe" {
   source  = "./sqs"
   queue   = "${var.endpoint}"
   topic   = "${var.topic}"
-  enabled = "${data.null_data_source.protocol.outputs["type"] == "arn" ? 1 : 0}"
+  enabled = "${var.protocol == "sqs" ? 1 : 0}"
 }
 
 module "https-subscribe" {
   source  = "./https"
   url     = "${var.endpoint}"
   topic   = "${var.topic}"
-  enabled = "${data.null_data_source.protocol.outputs["type"] == "https" ? 1 : 0}"
+  enabled = "${var.protocol == "https" ? 1 : 0}"
 }
 
 /**

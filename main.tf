@@ -35,6 +35,7 @@ module "sqs" {
 module "subscriber-one" {
   source   = "./subscribe"
   topic    = "${module.api.topic}"
+  protocol = "sqs"
   endpoint = "${module.sqs.queue}"
   entities = ["articles", "tags"]
 }
@@ -42,6 +43,7 @@ module "subscriber-one" {
 module "subscriber-two" {
   source   = "./subscribe"
   topic    = "${module.api.topic}"
+  protocol = "https"
   endpoint = "https://routeawster-http-subscriber.herokuapp.com/"
   entities = ["tags"]
 }

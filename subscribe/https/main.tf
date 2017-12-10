@@ -11,7 +11,7 @@ variable "enabled" {
 }
 
 output "arn" {
-  value = "${aws_sns_topic_subscription.subscription.*.arn}"
+  value = "${aws_sns_topic_subscription.subscription.*.id}"
 }
 
 resource "aws_sns_topic_subscription" "subscription" {
