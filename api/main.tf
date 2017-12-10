@@ -88,6 +88,7 @@ resource "aws_api_gateway_method" "endpoint" {
   http_method = "POST"
   authorization = "NONE"
   api_key_required = true
+  depends_on    = ["aws_api_gateway_resource.publish"]
 }
 
 resource "aws_api_gateway_integration" "integration" {
@@ -106,6 +107,7 @@ resource "aws_api_gateway_integration" "integration" {
     "integration.request.querystring.MessageAttributes.entry.1.Value.DataType"    = "'String'"
     "integration.request.querystring.MessageAttributes.entry.1.Value.StringValue" = "'${var.entities[count.index]}'"
   }
+  depends_on  = ["aws_api_gateway_resource.publish"]
 }
 
 resource "aws_api_gateway_method_response" "200" {
@@ -114,6 +116,7 @@ resource "aws_api_gateway_method_response" "200" {
   resource_id = "${element(aws_api_gateway_resource.publish.*.id, count.index)}"
   http_method = "${element(aws_api_gateway_method.endpoint.*.http_method, count.index)}"
   status_code = "200"
+  depends_on  = ["aws_api_gateway_method.endpoint", "aws_api_gateway_resource.publish"]
 }
 
 resource "aws_api_gateway_integration_response" "response" {
@@ -122,4 +125,5 @@ resource "aws_api_gateway_integration_response" "response" {
   resource_id = "${element(aws_api_gateway_resource.publish.*.id, count.index)}"
   http_method = "${element(aws_api_gateway_method.endpoint.*.http_method, count.index)}"
   status_code = "${element(aws_api_gateway_method_response.200.*.status_code, count.index)}"
+  depends_on  = ["aws_api_gateway_resource.publish", "aws_api_gateway_method.endpoint", "aws_api_gateway_method_response.200"]
 }
