@@ -1,3 +1,5 @@
+_This was hacked together in December 2017, the commits in this repo are from when it was moved into the open._
+
 ## What this is
 
 This repository contains [Terraform](https://www.terraform.io/) modules to create a [Routemaster](https://github.com/deliveroo/routemaster)-_ish_ setup using only pure AWS componets, like so:
